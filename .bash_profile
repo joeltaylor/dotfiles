@@ -53,7 +53,7 @@ prompt
 #
 # Downloaded from https://github.com/git/git/blob/master/contrib/completion/git-completion.bash
 
-source ~/git-completion.bash
+source ~/.git-completion.bash
 
 ## Git helper
 gcs() {
@@ -116,3 +116,7 @@ fi
 ## Bin
 #
 PATH=./bin:$PATH
+
+. $HOME/.asdf/asdf.sh
+
+. $HOME/.asdf/completions/asdf.bash
