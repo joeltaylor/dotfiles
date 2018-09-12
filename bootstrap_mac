@@ -1,0 +1,153 @@
+#!/bin/sh
+
+fancy_echo() {
+  local fmt="$1"; shift
+
+  # shellcheck disable=SC2059
+  printf "\\n$fmt\\n" "$@"
+}
+
+append_to_bash_profile() {
+  local text="$1" bash_profile
+  local skip_new_line="${2:-0}"
+
+  bash_profile="$HOME/.bash_profile"
+
+  if ! grep -Fqs "$text" "$bash_profile"; then
+    if [ "$skip_new_line" -eq 1 ]; then
+      printf "%s\\n" "$text" >> "$bash_profile"
+    else
+      printf "\\n%s\\n" "$text" >> "$bash_profile"
+    fi
+  fi
+}
+
+append_to_asdfrc() {
+  local text="$1" asdfrc
+  local skip_new_line="${2:-0}"
+
+  asdfrc="$HOME/.asdfrc"
+
+  if ! grep -Fqs "$text" "$asdfrc"; then
+    if [ "$skip_new_line" -eq 1 ]; then
+      printf "%s\\n" "$text" >> "$asdfrc"
+    else
+      printf "\\n%s\\n" "$text" >> "$asdfrc"
+    fi
+  fi
+}
+
+gem_install_or_update() {
+  if gem list "$1" --installed > /dev/null; then
+    gem update "$@"
+  else
+    gem install "$@"
+  fi
+}
+
+install_asdf_language() {
+  local language="$1"
+  local version="$2"
+
+  if ! asdf list "$language" | grep -Fq "$version"; then
+    asdf install "$language" "$version"
+    asdf global "$language" "$version"
+  fi
+}
+
+install_asdf_plugin() {
+  local name="$1"
+  local url="$2"
+
+  if ! asdf plugin-list | grep -Fq "$name"; then
+    asdf plugin-add "$name" "$url"
+  fi
+}
+
+
+# shellcheck disable=SC2154
+trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
+
+set -e
+
+if [ ! -f "$HOME/.bash_profile" ]; then
+  touch "$HOME/.bash_profile"
+fi
+
+HOMEBREW_PREFIX="/usr/local"
+
+if [ -d "$HOMEBREW_PREFIX" ]; then
+  if ! [ -r "$HOMEBREW_PREFIX" ]; then
+    sudo chown -R "$LOGNAME:admin" /usr/local
+  fi
+else
+  sudo mkdir "$HOMEBREW_PREFIX"
+  sudo chflags norestricted "$HOMEBREW_PREFIX"
+  sudo chown -R "$LOGNAME:admin" "$HOMEBREW_PREFIX"
+fi
+
+if ! command -v brew >/dev/null; then
+  fancy_echo "Installing Homebrew ..."
+    curl -fsS \
+      'https://raw.githubusercontent.com/Homebrew/install/master/install' | ruby
+else
+  fancy_echo "Homebrew installed"
+fi
+
+fancy_echo "Installing dependencies with homebrew"
+brew bundle --file=- <<EOF
+
+cask_args appdir: "/Applications"
+tap "homebrew/cask"
+
+# Programming language prerequisites and package managers
+brew "libjpeg"
+brew "libpng"
+brew "openssl"
+
+# NodeJS dependencies
+brew "coreutils" 
+brew "gpg"
+
+EOF
+
+fancy_echo "Configuring asdf version manager..."
+if [ ! -d "$HOME/.asdf" ]; then
+  git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.5.1
+
+  append_to_bash_profile ". $HOME/.asdf/asdf.sh" 1
+  append_to_bash_profile ". $HOME/.asdf/completions/asdf.bash" 1
+fi
+
+# shellcheck disable=SC1090
+source "$HOME/.asdf/asdf.sh"
+install_asdf_plugin "ruby" "https://github.com/asdf-vm/asdf-ruby.git"
+install_asdf_plugin "nodejs" "https://github.com/asdf-vm/asdf-nodejs.git"
+
+if ! asdf list ruby | grep -Fq "2.5.1"; then
+  fancy_echo "Installing Ruby 2.5.1"
+  install_asdf_language "ruby" "2.5.1"
+  gem_install_or_update "bundler" 
+else
+  fancy_echo "Ruby installed"
+fi
+
+if ! which node > /dev/null; then
+  fancy_echo "Installing Node..."
+  bash "$HOME/.asdf/plugins/nodejs/bin/import-release-team-keyring"
+  install_asdf_language "nodejs" "8.12.0"
+else
+  fancy_echo "Node installed"
+fi
+
+# Ensure asdf reads from .ruby-version
+append_to_asdfrc 'legacy_version_file = yes'
+
+if [ -f "$HOME/.laptop" ]; then
+  fancy_echo "Running your customizations from ~/.laptop ..."
+  # shellcheck disable=SC1090
+  . "$HOME/.laptop"
+fi
+
+
+source ~/.bash_profile

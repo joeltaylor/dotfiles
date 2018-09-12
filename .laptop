@@ -1,0 +1,26 @@
+#!/bin/sh
+
+brew bundle --file=- <<EOF
+  cask_args appdir: "/Applications"
+
+  tap "moncho/dry"
+  brew "dry"
+
+  cask "kitty"
+  cask "spectacle"
+  cask "hammerspoon"
+
+  brew "shellcheck"
+  brew "vim"
+  brew "tmux"
+  brew "fzf"
+  brew "yadm"
+  brew "hub"
+  brew "bash-git-prompt"
+EOF
+
+
+if ! which fzf > /dev/null; then
+  $(brew --prefix)/opt/fzf/install
+fi
+
