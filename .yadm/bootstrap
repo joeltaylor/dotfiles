@@ -2,6 +2,8 @@
 
 if command -v vim >/dev/null 2>&1; then
   echo "Bootstraping Vim"
+  curl https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash \
+    -o ~/.git-completion.bash
     if [ ! -f "$HOME/.vim/autoload/plug.vim" ]; then
       echo "Installing Vim Plug ..."
       curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
