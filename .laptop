@@ -4,11 +4,14 @@ brew bundle --file=- <<EOF
   cask_args appdir: "/Applications"
 
   tap "moncho/dry"
+  tap "homebrew/cask-fonts"
   brew "dry"
 
   cask "kitty"
   cask "spectacle"
   cask "hammerspoon"
+  cask "font-inconsolata-for-powerline"
+  cask "alfred"
 
   brew "shellcheck"
   brew "vim"
