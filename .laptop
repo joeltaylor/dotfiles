@@ -16,6 +16,7 @@ brew bundle --file=- <<EOF
   brew "shellcheck"
   brew "vim"
   brew "tmux"
+  brew "reattach-to-user-namespace"
   brew "fzf"
   brew "yadm"
   brew "hub"
