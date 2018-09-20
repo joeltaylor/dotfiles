@@ -39,13 +39,21 @@ Plug 'Trevoke/ultisnips-rspec'
 Plug 'w0rp/ale'
 Plug 'qpkorr/vim-bufkill'
 Plug 'luochen1990/rainbow'
+Plug 'chriskempson/base16-vim'
 
 " all of your plugins must be added before the following line
 " Initialize plugin system
 call plug#end()
 let g:jsx_ext_required = 0
 
- let g:UltiSnipsSnippetDirectories=["mysnippets"]
+" Color scheme
+set termguicolors
+let base16colorspace=256
+colorscheme base16-twilight
+highlight LineNr guibg=NONE
+
+
+let g:UltiSnipsSnippetDirectories=["mysnippets"]
 
 set clipboard=unnamed
 
@@ -58,8 +66,14 @@ set iskeyword-=_
 " Undofile
 "
 " Undo changes even after a file as been closed then reopened
+if !isdirectory($HOME."/.vim")
+  call mkdir($HOME."/.vim", "", 0770)
+endif
+if !isdirectory($HOME."/.vim/undo-dir")
+  call mkdir($HOME."/.vim/undo-dir", "", 0700)
+endif
+set undodir=~/.vim/undo-dir
 set undofile
-set undodir=~/.vim/undodir
 
 " Better folding shortcut
 nnoremap <silent> <Space> @=(foldlevel('.')?'za':"\<Space>")<CR>
@@ -101,9 +115,8 @@ command! Rdb AsyncRun bin/rails db:environment:set RAILS_ENV=test
 
 
 " Colorized brackets
-let g:rainbow_active = 1
+let g:rainbow_active = 0
 autocmd filetype html call rainbow#toggle()
-autocmd filetype sh call rainbow#toggle()
 
 
 " Skip quickfix when cycling buffers
@@ -147,7 +160,7 @@ nmap <silent> <leader>t :TestFile<CR>
 nmap <silent> <leader>l :TestLast<CR>
 nmap <silent> <leader>n :TestNearest<CR>
 let test#strategy = "asyncrun"
-let test#ruby#rspec#executable = 'bin/spring rspec --fail-fast'
+let test#ruby#rspec#executable = 'rspec --fail-fast'
 
 noremap \q :call asyncrun#quickfix_toggle(8)<cr>
 
@@ -212,16 +225,13 @@ set listchars=tab:▸·
 map <leader>rt :AsyncRun ctags -R --exclude="*.log" --exclude="node_modules" --exclude="vendor" .<CR><CR>
 set tags+=.git/tags
 
-" Color scheme
-colorscheme smyck
-
 " Make git-gutter look better.
 " This must go after the color scheme.
 highlight clear SignColumn
-highlight GitGutterAdd ctermfg=green
-highlight GitGutterChange ctermfg=yellow
-highlight GitGutterDelete ctermfg=red
-highlight GitGutterChangeDelete ctermfg=yellow
+highlight GitGutterAdd ctermbg=none ctermfg=green
+highlight GitGutterChange ctermbg=none ctermfg=yellow
+highlight GitGutterDelete ctermbg=none ctermfg=red
+highlight GitGutterChangeDelete ctermbg=none ctermfg=yellow
 highlight SignColumn ctermbg=none
 
 "ALE highlights
@@ -263,15 +273,15 @@ let g:airline#extensions#bufferline#enabled = 1
 let g:airline#extensions#tagbar#enabled = 1
 set encoding=utf-8
 " let g:tmuxline_powerline_separators = 0
+let g:airline_theme = 'base16_twilight'
 let g:airline#extensions#tmuxline#enabled = 1
-let g:airline_theme = 'base16_eighties'
 
 set statusline+=%{fugitive#statusline()}
 set statusline+=%#warningmsg#
 set statusline+=%*
 
 let g:airline_section_warning = airline#section#create_right(['%{g:asyncrun_status}']) "asyncrun
-highlight ColorColumn ctermbg=238 guibg=#5d5d5d
+" highlight ColorColumn ctermbg=238 guibg=#5d5d5d
 execute "set colorcolumn=" . join(range(81,335), ',')
 
 " Scroll with the mouse wheel
@@ -347,8 +357,8 @@ command! -nargs=* Ag call fzf#run({
       \ })
 command! -bang -nargs=* Ag
       \ call fzf#vim#ag(<q-args>,
-      \                 <bang>0 ? fzf#vim#with_preview('up:60%')
-      \                         : fzf#vim#with_preview('right:50%:hidden', '|'),
+      \                 <bang>0 ? fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'up:60%')
+      \                         : fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%:hidden', '|'),
       \                 <bang>0)
 
 function! s:buflist()

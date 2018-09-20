@@ -5,26 +5,47 @@ brew bundle --file=- <<EOF
 
   tap "moncho/dry"
   tap "homebrew/cask-fonts"
+  tap "universal-ctags/universal-ctags"
+  tap "crisidev/homebrew-chunkwm"
+
   brew "dry"
 
   cask "kitty"
+  cask "google-chrome"
+  cask "firefox"
   cask "spectacle"
   cask "hammerspoon"
   cask "font-inconsolata-for-powerline"
   cask "alfred"
+  cask "spotify"
+  cask "sequel-pro"
 
   brew "shellcheck"
   brew "vim"
   brew "tmux"
+  brew "ag"
   brew "reattach-to-user-namespace"
+  brew "autojump"
   brew "fzf"
   brew "yadm"
   brew "hub"
   brew "bash-git-prompt"
+  brew "universal-ctags", args: ["HEAD"]
+  brew "bat"
+  brew "fd"
+  brew "htop"
+  brew "tig"
 EOF
+
+
+append_to_bash_profile "[ -f /usr/local/etc/profile.d/autojump.sh ] && . /usr/local/etc/profile.d/autojump.sh"
 
 
 if ! which fzf > /dev/null; then
   $(brew --prefix)/opt/fzf/install
 fi
+
+git config --global alias.co checkout
+
+source ~/.bash_profile
 

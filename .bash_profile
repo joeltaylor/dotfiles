@@ -4,32 +4,17 @@
 export VISUAL=vim
 export EDITOR="$VISUAL"
 export PRIDE=true
+export TERM=xterm-256color
 
 ########
 # Bash
 ########
 
 function prompt {
-  local BLACK="\[\033[0;30m\]"
-  local BLACKBOLD="\[\033[1;30m\]"
-  local RED="\[\033[0;31m\]"
-  local REDBOLD="\[\033[1;31m\]"
-  local GREEN="\[\033[0;32m\]"
-  local GREENBOLD="\[\033[1;32m\]"
-  local YELLOW="\[\033[0;33m\]"
-  local YELLOWBOLD="\[\033[1;33m\]"
-  local BLUE="\[\033[0;34m\]"
-  local BLUEBOLD="\[\033[1;34m\]"
-  local PURPLE="\[\033[0;35m\]"
-  local PURPLEBOLD="\[\033[1;35m\]"
-  local CYAN="\[\033[0;36m\]"
-  local CYANBOLD="\[\033[1;36m\]"
-  local WHITE="\[\033[0;37m\]"
-  local WHITEBOLD="\[\033[1;37m\]"
   local RESETCOLOR="\[\e[00m\]"
 
   # export PS1="\n$RED\u $PURPLE@ $GREEN\w $RESETCOLOR$GREENBOLD\$(git branch 2> /dev/null)\n $BLUE[\#] → $RESETCOLOR"
-  export PS1="$CYAN\w $WHITE\nλ "
+  export PS1="\[\e[91m\]\w\[\e[m\] $WHITE\nλ "
 }
 
 prompt
@@ -39,7 +24,8 @@ prompt
 #
  GIT_PROMPT_ONLY_IN_REPO=1
  GIT_PROMPT_SHOW_UNTRACKED_FILES=no
- GIT_PROMPT_START_USER="\[\033[0;36m\]\w\[\033[0;37m\]" # This needs to be defined in a theme to work normally.
+ GIT_PROMPT_START_USER="\[\033[0;91m\]\w\[\033[0;37m\]" # This needs to be defined in a theme to work normally.
+ GIT_PROMPT_BRANCH="${Yellow}"
  # GIT_PROMPT_START_ROOT="${GIT_PROMPT_START_USER}"
  GIT_PROMPT_END_USER="$WHITE\nλ "
  GIT_PROMPT_END_ROOT="${GIT_PROMPT_END_USER}"
@@ -58,10 +44,6 @@ source ~/.git-completion.bash
 ## Git helper
 gcs() {
   git commit -m "[squash] $1"
-}
-
-gcs!() {
-  git commit -m "[squash] $1" --no-verify
 }
 
 gcb() {
@@ -92,21 +74,23 @@ _fzf_compgen_path() {
   ag -g "" "$1"
 }
 
-# fbr - checkout git branch (including remote branches), sorted by most recent commit, limit 30 last branches
 gb() {
   local branches branch
-  branches=$(git for-each-ref --count=50 --sort=-committerdate refs/heads/ --format="%(refname:short)") &&
+  branches=$(git branch --all | grep -v HEAD) &&
     branch=$(echo "$branches" |
-  fzf-tmux -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
+    fzf-tmux -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
     git checkout $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
-}
-
+  }
 
 
 ## Bashrc
 #
 if [ -f ~/.bashrc ]; then
   source ~/.bashrc
+fi
+
+if [ -f ~/.bash_aliases ]; then
+  source ~/.bash_aliases
 fi
 
 ## Golang
@@ -120,3 +104,5 @@ PATH=./bin:$PATH
 . $HOME/.asdf/asdf.sh
 
 . $HOME/.asdf/completions/asdf.bash
+
+[ -f /usr/local/etc/profile.d/autojump.sh ] && . /usr/local/etc/profile.d/autojump.sh

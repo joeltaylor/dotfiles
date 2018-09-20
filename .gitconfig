@@ -1,3 +1,7 @@
 [user]
 	name = Joel Taylor
 	email = joel@codeprivy.com
+[alias]
+	co = checkout
+[core]
+	excludesfile = /Users/joeltaylor/.gitignore_global

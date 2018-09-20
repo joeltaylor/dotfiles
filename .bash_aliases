@@ -56,6 +56,10 @@ alias ta="tmux attach"
 # Keyboard
 alias kreset="make iris/rev2:joel:avrdude"
 
+# Docker
+alias du="docker-compose up -d"
+alias dd="docker-compose stop"
+
 
 function crun() {
   make $1 && ./$1;
